@@ -4,7 +4,7 @@ import { App } from './App';
 import { BUILD_DATE, BUILD_DETAILS_URL, VERSION } from './config';
 
 console.info(
-    `%c🔲 Templateapp version ${VERSION}` +
+    `%c✂️ Model splitter version ${VERSION}` +
         (!BUILD_DATE ? `` : `\nBuild at ${BUILD_DATE.toLocaleString()}`) +
         (!BUILD_DETAILS_URL
             ? ``

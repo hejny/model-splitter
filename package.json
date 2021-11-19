@@ -1,19 +1,19 @@
 {
-    "name": "template-for-webapp",
+    "name": "model-splitter",
     "version": "0.1.0",
     "private": false,
-    "homepage": "https://www.domain.tld/",
+    "homepage": "https://splitter.pavolhejny.com/",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/hejny/template-for-webapp"
+        "url": "https://github.com/hejny/model-splitter"
     },
     "contributors": [
         "Pavol Hejný <pavol@collboard.com> (https://pavolhejny.com)"
     ],
     "scripts": {
         "start": "npx react-scripts start",
-        "build": "rm -rf ./build && react-scripts build && echo \"www.domain.tld\" > ./build/CNAME",
+        "build": "rm -rf ./build && react-scripts build && echo \"splitter.pavolhejny.com\" > ./build/CNAME",
         "test": "npx react-scripts test --watchAll=false",
         "lint": "npx tslint -p tsconfig.json",
         "preversion": "npm run lint && npm test",
