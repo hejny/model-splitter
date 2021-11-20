@@ -6,6 +6,10 @@
             "command": "npm start"
         },
         {
+            "name": "🌍🔥 Expose",
+            "command": "npx lt --port 11001 --subdomain splitter"
+        },
+        {
             "name": "🧪 Lint",
             "command": "npm run lint",
             "onlySingle": true,
