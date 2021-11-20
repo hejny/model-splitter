@@ -14,9 +14,11 @@ export function MainPage() {
             <h1>Model splitter</h1>
 
             <SceneComponent
-                onSceneReady={(scene) => {
+                onSceneReady={async (scene) => {
+                    // TODO: !!! Breakup into smaller functions
+
                     // This creates and positions a free camera (non-mesh)
-                    var camera = new FreeCamera(
+                    const camera = new FreeCamera(
                         'camera1',
                         new Vector3(0, 5, -10),
                         scene,
@@ -31,7 +33,7 @@ export function MainPage() {
                     camera.attachControl(canvas, true);
 
                     // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-                    var light = new HemisphericLight(
+                    const light = new HemisphericLight(
                         'light',
                         new Vector3(0, 1, 0),
                         scene,
@@ -51,11 +53,20 @@ export function MainPage() {
                     box.position.y = 1;
 
                     // Our built-in 'ground' shape.
-                    MeshBuilder.CreateGround(
+                    const ground = MeshBuilder.CreateGround(
                         'ground',
-                        { width: 6, height: 6 },
+                        {
+                            // TODO: How to make ground infinite?
+                            width: 1000,
+                            height: 1000,
+                        },
                         scene,
                     );
+
+                    // TODO: !!! Add polyfill https://doc.babylonjs.com/divingDeeper/webXR/introToWebXR
+                    const xr = await scene.createDefaultXRExperienceAsync({
+                        floorMeshes: [ground],
+                    });
                 }}
             />
         </MainPageDiv>
@@ -64,11 +75,20 @@ export function MainPage() {
 
 const MainPageDiv = styled.div`
     canvas {
-        z-index: -1;
+        z-index: 1;
         position: fixed;
         top: 0;
         left: 0;
         width: 100vw;
         height: 100vh;
     }
+
+    /*.controlls{
+        z-index: 1;
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+    }*/
 `;
