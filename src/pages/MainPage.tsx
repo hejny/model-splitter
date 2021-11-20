@@ -1,9 +1,13 @@
 import {
+    Color3,
     FreeCamera,
     HemisphericLight,
     MeshBuilder,
+    SceneLoader,
+    StandardMaterial,
     Vector3,
 } from '@babylonjs/core';
+import '@babylonjs/loaders/glTF';
 import React from 'react';
 import styled from 'styled-components';
 import { SceneComponent } from '../components/SceneComponent';
@@ -52,6 +56,11 @@ export function MainPage() {
                         scene,
                     );
 
+                    const material = new StandardMaterial('material', scene);
+                    material.diffuseColor = Color3.FromHexString('#0055ff');
+
+                    box.material = material;
+
                     // Move the box upward 1/2 its height
                     box.position.y = 1;
 
@@ -66,9 +75,26 @@ export function MainPage() {
                         scene,
                     );
 
-                     const xr = await scene.createDefaultXRExperienceAsync({
+                    const xr = await scene.createDefaultXRExperienceAsync({
                         floorMeshes: [ground],
                     });
+
+                    xr.pointerSelection.laserPointerDefaultColor =
+                        Color3.FromHexString('#ff0000');
+
+                    console.log(SceneLoader);
+                    // TODO: Make as promise with loader support
+                    SceneLoader.Append(
+                        process.env.PUBLIC_URL + 'models/',
+                        // TODO: !!! 'Tumor.obj',
+                        'Fox.glb',
+                        scene,
+                        (a: any) => {
+                            console.log(a);
+
+                            // Finished
+                        },
+                    );
                 }}
             />
         </MainPageDiv>
