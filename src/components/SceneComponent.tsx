@@ -40,7 +40,7 @@ export function SceneComponent(props: ISceneComponentProps) {
                     onSceneReady(scene);
                 }
             } else {
-                scene.onReadyObservable.addOnce((scene) => {
+                scene.onReadyObservable.addOnce(() => {
                     if (onSceneReady) {
                         onSceneReady(scene);
                     }

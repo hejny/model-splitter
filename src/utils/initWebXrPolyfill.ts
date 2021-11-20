@@ -5,6 +5,7 @@ export async function initWebXrPolyfill() {
                 return resolve();
             }
             if ((window as any).WebXRPolyfill) {
+                // tslint:disable-next-line:no-unused-expression
                 new (window as any).WebXRPolyfill();
                 return resolve();
             } else {
@@ -14,6 +15,7 @@ export async function initWebXrPolyfill() {
                 scriptElement.src = url;
                 document.head.appendChild(scriptElement);
                 scriptElement.onload = () => {
+                    // tslint:disable-next-line:no-unused-expression
                     new (window as any).WebXRPolyfill();
                     resolve();
                 };
