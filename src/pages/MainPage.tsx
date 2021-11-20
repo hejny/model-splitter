@@ -1,15 +1,19 @@
 import {
     Color3,
+    CSG,
     FreeCamera,
     HemisphericLight,
+    Mesh,
     MeshBuilder,
     SceneLoader,
     StandardMaterial,
     Vector3,
 } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
+import '@babylonjs/loaders/OBJ';
 import React from 'react';
 import styled from 'styled-components';
+import { forEver, forTime } from 'waitasecond';
 import { SceneComponent } from '../components/SceneComponent';
 import { initWebXrPolyfill } from '../utils/initWebXrPolyfill';
 
@@ -49,20 +53,30 @@ export function MainPage() {
                     // Default intensity is 1. Let's dim the light a small amount
                     light.intensity = 0.7;
 
-                    // Our built-in 'box' shape.
+                    /*/
                     const box = MeshBuilder.CreateBox(
                         'box',
                         { size: 2 },
                         scene,
                     );
-
-                    const material = new StandardMaterial('material', scene);
-                    material.diffuseColor = Color3.FromHexString('#0055ff');
-
-                    box.material = material;
-
-                    // Move the box upward 1/2 its height
+                    box.material = materialA;
                     box.position.y = 1;
+                    /**/
+
+                    //------
+                    // TODO: Marial provider
+                    const materialA = new StandardMaterial('material', scene);
+                    materialA.diffuseColor = Color3.FromHexString('#0055ff');
+                    materialA.alpha = 0.5;
+
+                    const materialB = new StandardMaterial('material', scene);
+                    materialB.diffuseColor = Color3.FromHexString('#ff002b');
+                    materialB.alpha = 0.5;
+
+                    const materialC = new StandardMaterial('material', scene);
+                    materialC.diffuseColor = Color3.FromHexString('#88ff00');
+                    materialC.alpha = 0.5;
+                    //------
 
                     // Our built-in 'ground' shape.
                     const ground = MeshBuilder.CreateGround(
@@ -82,6 +96,39 @@ export function MainPage() {
                     xr.pointerSelection.laserPointerDefaultColor =
                         Color3.FromHexString('#ff0000');
 
+                    const tube1 = MeshBuilder.CreateTube(
+                        'tube1',
+                        {
+                            cap: Mesh.CAP_ALL,
+                            radius: 0.6,
+                            path: [
+                                new Vector3(-1, -1, -1),
+
+                                new Vector3(0, 0, 0),
+                                new Vector3(10, 5, 0),
+                            ],
+                        },
+                        scene,
+                    );
+                    tube1.material = materialB;
+
+                    const tube2 = MeshBuilder.CreateTube(
+                        'tube2',
+                        {
+                            cap: Mesh.CAP_ALL,
+                            radius: 0.6,
+                            path: [
+                                new Vector3(-10, 20, 0),
+
+                                new Vector3(0, 0, 0),
+                            ],
+                        },
+                        scene,
+                    );
+                    tube2.material = materialB;
+
+                    /*/
+                    // TODO: DRY
                     // TODO: Make as promise with loader support
                     SceneLoader.ImportMesh(
                         '',
@@ -90,7 +137,7 @@ export function MainPage() {
                         'Fox.glb',
                         scene,
                         (newMeses) => {
-                            console.log(newMeses);
+                            //console.log(newMeses);
 
                             let x = 2;
                             for (const mesh of newMeses) {
@@ -99,6 +146,50 @@ export function MainPage() {
                                 mesh.scaling.z = 0.02;
                                 mesh.position.y = 1;
                                 mesh.position.x = x++;
+                            }
+
+                            // Finished
+                        },
+                    );
+                    /**/
+
+                    // TODO: DRY
+                    // TODO: Make as promise with loader support
+                    SceneLoader.ImportMesh(
+                        '',
+                        process.env.PUBLIC_URL + 'models/',
+                        'Tumor.obj',
+
+                        scene,
+                        async (newMeses) => {
+                            //console.log(newMeses);
+
+                            //let x = 4;
+                            for (const mesh of newMeses) {
+                                mesh.scaling.x = 0.02;
+                                mesh.scaling.y = 0.02;
+                                mesh.scaling.z = 0.02;
+                                mesh.position.y = 1;
+                                //mesh.position.x = x++;
+                                //mesh.rotation.y = Math.PI;
+
+                                /**/
+                                // TODO: Cuttion manager
+
+                                await forEver();
+                                await forTime(1000);
+                                const a = CSG.FromMesh(mesh as any);
+                                const b = CSG.FromMesh(tube1);
+                                const c = CSG.FromMesh(tube2);
+
+                                const cropped = a.subtract(b).subtract(c);
+
+                                cropped.toMesh('cropped', materialC, scene);
+
+                                tube1.dispose();
+                                tube2.dispose();
+                                mesh.dispose();
+                                /**/
                             }
 
                             // Finished
