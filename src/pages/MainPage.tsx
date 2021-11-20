@@ -1,19 +1,17 @@
 import {
     Color3,
-    CSG,
     FreeCamera,
     HemisphericLight,
     Mesh,
     MeshBuilder,
-    SceneLoader,
     StandardMaterial,
     Vector3,
+    WebXRInputSource,
 } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
 import '@babylonjs/loaders/OBJ';
 import React from 'react';
 import styled from 'styled-components';
-import { forEver, forTime } from 'waitasecond';
 import { SceneComponent } from '../components/SceneComponent';
 import { initWebXrPolyfill } from '../utils/initWebXrPolyfill';
 
@@ -96,6 +94,113 @@ export function MainPage() {
                     xr.pointerSelection.laserPointerDefaultColor =
                         Color3.FromHexString('#ff0000');
 
+                    const tubeDrawOptions: any = {
+                        updatable: true,
+                        cap: Mesh.CAP_ALL,
+                        radius: 0.1,
+                        path: Array(10000).fill(new Vector3(0, 0, 0)),
+                    };
+                    let tubeDraw = MeshBuilder.CreateTube(
+                        'tubeDraw',
+                        tubeDrawOptions,
+                        scene,
+                    );
+                    tubeDraw.material = materialC;
+                    let i = 0;
+
+                    xr.input.onControllerAddedObservable.add(
+                        (controller: WebXRInputSource) => {
+                            controller.onMotionControllerInitObservable.add(
+                                (motionController) => {
+                                    console.info(
+                                        `🕹️ ${
+                                            controller.uniqueId
+                                        } connected (with ${Object.keys(
+                                            motionController.components,
+                                        ).join(', ')})`,
+                                        motionController,
+                                    );
+
+                                    /*
+                                    for (const [
+                                        key,
+                                        component,
+                                    ] of Object.entries(
+                                        motionController.components,
+                                    )) {
+                                        console.log(key, component);
+
+                                        component.onButtonStateChangedObservable.add(
+                                            (xxx) => {
+                                                console.log(xxx);
+                                            },
+                                        );
+                                    }
+                                    */
+
+                                    motionController.components[
+                                        'xr-standard-trigger'
+                                    ].onButtonStateChangedObservable.add(
+                                        (state) => {
+                                            // TODO: !!! Use value
+                                            //console.log(state.value);
+
+                                            if (motionController.rootMesh) {
+                                                const position =
+                                                    motionController.rootMesh.absolutePosition.clone();
+
+                                                // Update
+                                                tubeDrawOptions.path[i++] =
+                                                    position;
+                                                tubeDrawOptions.instance =
+                                                    tubeDraw;
+                                                tubeDraw =
+                                                    MeshBuilder.CreateTube(
+                                                        'tubeDraw',
+                                                        tubeDrawOptions,
+                                                    );
+                                            } else {
+                                                //console.log('No rootMesh');
+                                            }
+                                        },
+                                    );
+
+                                    /*/
+                                    (async () => {
+                                        let i = 0;
+                                        while (true) {
+                                            await forTime(100);
+
+                                            if (
+                                                motionController
+                                                    .rootMesh
+                                            ) {
+                                                const position =
+                                                    motionController.rootMesh.absolutePosition.clone();
+
+                                                // Update
+                                                tubeDrawOptions.path[i++] =
+                                                    position;
+                                                tubeDrawOptions.instance =
+                                                    tubeDraw;
+                                                tubeDraw =
+                                                    MeshBuilder.CreateTube(
+                                                        'tubeDraw',
+                                                        tubeDrawOptions,
+                                                    );
+                                            } else {
+                                                //console.log('No rootMesh');
+                                            }
+                                        }
+                                    })();
+
+                                    /**/
+                                },
+                            );
+                        },
+                    );
+
+                    /*/
                     const tube1 = MeshBuilder.CreateTube(
                         'tube1',
                         {
@@ -111,7 +216,9 @@ export function MainPage() {
                         scene,
                     );
                     tube1.material = materialB;
+                    /**/
 
+                    /*/
                     const tube2 = MeshBuilder.CreateTube(
                         'tube2',
                         {
@@ -126,6 +233,7 @@ export function MainPage() {
                         scene,
                     );
                     tube2.material = materialB;
+                    /**/
 
                     /*/
                     // TODO: DRY
@@ -136,11 +244,11 @@ export function MainPage() {
                         // TODO: !!! 'Tumor.obj',
                         'Fox.glb',
                         scene,
-                        (newMeses) => {
-                            //console.log(newMeses);
+                        (newMeshes) => {
+                            //console.log(newMeshes);
 
                             let x = 2;
-                            for (const mesh of newMeses) {
+                            for (const mesh of newMeshes) {
                                 mesh.scaling.x = 0.02;
                                 mesh.scaling.y = 0.02;
                                 mesh.scaling.z = 0.02;
@@ -153,6 +261,7 @@ export function MainPage() {
                     );
                     /**/
 
+                    /*/
                     // TODO: DRY
                     // TODO: Make as promise with loader support
                     SceneLoader.ImportMesh(
@@ -161,11 +270,11 @@ export function MainPage() {
                         'Tumor.obj',
 
                         scene,
-                        async (newMeses) => {
-                            //console.log(newMeses);
+                        async (newMeshes) => {
+                            //console.log(newMeshes);
 
                             //let x = 4;
-                            for (const mesh of newMeses) {
+                            for (const mesh of newMeshes) {
                                 mesh.scaling.x = 0.02;
                                 mesh.scaling.y = 0.02;
                                 mesh.scaling.z = 0.02;
@@ -173,7 +282,7 @@ export function MainPage() {
                                 //mesh.position.x = x++;
                                 //mesh.rotation.y = Math.PI;
 
-                                /**/
+                                /** /
                                 // TODO: Cuttion manager
 
                                 await forEver();
@@ -189,12 +298,13 @@ export function MainPage() {
                                 tube1.dispose();
                                 tube2.dispose();
                                 mesh.dispose();
-                                /**/
+                                /** /
                             }
 
                             // Finished
                         },
                     );
+                    /**/
                 }}
             />
         </MainPageDiv>
