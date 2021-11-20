@@ -7,6 +7,7 @@ import {
 import React from 'react';
 import styled from 'styled-components';
 import { SceneComponent } from '../components/SceneComponent';
+import { initWebXrPolyfill } from '../utils/initWebXrPolyfill';
 
 export function MainPage() {
     return (
@@ -16,6 +17,8 @@ export function MainPage() {
             <SceneComponent
                 onSceneReady={async (scene) => {
                     // TODO: !!! Breakup into smaller functions
+
+                    await initWebXrPolyfill();
 
                     // This creates and positions a free camera (non-mesh)
                     const camera = new FreeCamera(
@@ -63,8 +66,7 @@ export function MainPage() {
                         scene,
                     );
 
-                    // TODO: !!! Add polyfill https://doc.babylonjs.com/divingDeeper/webXR/introToWebXR
-                    const xr = await scene.createDefaultXRExperienceAsync({
+                     const xr = await scene.createDefaultXRExperienceAsync({
                         floorMeshes: [ground],
                     });
                 }}
