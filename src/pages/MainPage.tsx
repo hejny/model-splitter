@@ -1,11 +1,12 @@
 import {
+    AbstractMesh,
     Color3,
     FreeCamera,
     HemisphericLight,
-    Mesh,
     MeshBuilder,
     StandardMaterial,
     Vector3,
+    WebXRAbstractMotionController,
     WebXRInputSource,
 } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
@@ -13,6 +14,7 @@ import '@babylonjs/loaders/OBJ';
 import React from 'react';
 import styled from 'styled-components';
 import { SceneComponent } from '../components/SceneComponent';
+import { Freehand } from '../utils/Freehand';
 import { initWebXrPolyfill } from '../utils/initWebXrPolyfill';
 
 export function MainPage() {
@@ -94,34 +96,36 @@ export function MainPage() {
                     xr.pointerSelection.laserPointerDefaultColor =
                         Color3.FromHexString('#ff0000');
 
-                    const tubeDrawOptions: any = {
-                        updatable: true,
-                        cap: Mesh.CAP_ALL,
-                        radius: 0.1,
-                        path: Array(10000).fill(new Vector3(0, 0, 0)),
-                    };
-                    let tubeDraw = MeshBuilder.CreateTube(
-                        'tubeDraw',
-                        tubeDrawOptions,
-                        scene,
-                    );
-                    tubeDraw.material = materialC;
-                    let i = 0;
+                    let freehand: Freehand | null = null;
 
                     xr.input.onControllerAddedObservable.add(
-                        (controller: WebXRInputSource) => {
-                            controller.onMotionControllerInitObservable.add(
-                                (motionController) => {
-                                    console.info(
-                                        `🕹️ ${
-                                            controller.uniqueId
-                                        } connected (with ${Object.keys(
-                                            motionController.components,
-                                        ).join(', ')})`,
-                                        motionController,
-                                    );
+                        async (controller: WebXRInputSource) => {
+                            const [rootMesh, motionController] =
+                                await Promise.all([
+                                    new Promise<AbstractMesh>((resolve) =>
+                                        controller.onMeshLoadedObservable.add(
+                                            (rootMesh) => resolve(rootMesh),
+                                        ),
+                                    ),
+                                    new Promise<WebXRAbstractMotionController>(
+                                        (resolve) =>
+                                            controller.onMotionControllerInitObservable.add(
+                                                (motionController) =>
+                                                    resolve(motionController),
+                                            ),
+                                    ),
+                                ]);
 
-                                    /*
+                            console.info(
+                                `🕹️ ${
+                                    controller.uniqueId
+                                } connected (with ${Object.keys(
+                                    motionController.components,
+                                ).join(', ')})`,
+                                motionController,
+                            );
+
+                            /*
                                     for (const [
                                         key,
                                         component,
@@ -138,34 +142,31 @@ export function MainPage() {
                                     }
                                     */
 
-                                    motionController.components[
-                                        'xr-standard-trigger'
-                                    ].onButtonStateChangedObservable.add(
-                                        (state) => {
-                                            // TODO: !!! Use value
-                                            //console.log(state.value);
+                            motionController.components[
+                                'xr-standard-trigger'
+                            ].onButtonStateChangedObservable.add((state) => {
+                                // TODO: !!! Use value
+                                //console.log(state.value);
 
-                                            if (motionController.rootMesh) {
-                                                const position =
-                                                    motionController.rootMesh.absolutePosition.clone();
+                                if (state.value !== 0) {
+                                    if (freehand === null) {
+                                        freehand = new Freehand(scene);
+                                        freehand.mesh.material = materialC;
+                                    }
 
-                                                // Update
-                                                tubeDrawOptions.path[i++] =
-                                                    position;
-                                                tubeDrawOptions.instance =
-                                                    tubeDraw;
-                                                tubeDraw =
-                                                    MeshBuilder.CreateTube(
-                                                        'tubeDraw',
-                                                        tubeDrawOptions,
-                                                    );
-                                            } else {
-                                                //console.log('No rootMesh');
-                                            }
-                                        },
+                                    freehand.addPoint(
+                                        rootMesh.absolutePosition.clone(),
                                     );
+                                } else if (
+                                    state.value === 0 &&
+                                    freehand !== null
+                                ) {
+                                    // TODO: Freeze object
+                                    freehand = null;
+                                }
+                            });
 
-                                    /*/
+                            /*/
                                     (async () => {
                                         let i = 0;
                                         while (true) {
@@ -195,8 +196,6 @@ export function MainPage() {
                                     })();
 
                                     /**/
-                                },
-                            );
                         },
                     );
 
