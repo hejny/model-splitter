@@ -82,15 +82,24 @@ export function MainPage() {
                     xr.pointerSelection.laserPointerDefaultColor =
                         Color3.FromHexString('#ff0000');
 
-                    console.log(SceneLoader);
                     // TODO: Make as promise with loader support
-                    SceneLoader.Append(
+                    SceneLoader.ImportMesh(
+                        '',
                         process.env.PUBLIC_URL + 'models/',
                         // TODO: !!! 'Tumor.obj',
                         'Fox.glb',
                         scene,
-                        (a: any) => {
-                            console.log(a);
+                        (newMeses) => {
+                            console.log(newMeses);
+
+                            let x = 2;
+                            for (const mesh of newMeses) {
+                                mesh.scaling.x = 0.02;
+                                mesh.scaling.y = 0.02;
+                                mesh.scaling.z = 0.02;
+                                mesh.position.y = 1;
+                                mesh.position.x = x++;
+                            }
 
                             // Finished
                         },
