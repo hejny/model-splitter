@@ -4,6 +4,7 @@ import {
     FreeCamera,
     HemisphericLight,
     MeshBuilder,
+    SceneLoader,
     StandardMaterial,
     Vector3,
     WebXRAbstractMotionController,
@@ -16,6 +17,7 @@ import styled from 'styled-components';
 import { SceneComponent } from '../components/SceneComponent';
 import { Freehand } from '../utils/Freehand';
 import { initWebXrPolyfill } from '../utils/initWebXrPolyfill';
+import { Sculpture } from '../utils/Sculpture';
 
 export function MainPage() {
     return (
@@ -53,6 +55,23 @@ export function MainPage() {
                     // Default intensity is 1. Let's dim the light a small amount
                     light.intensity = 0.7;
 
+                    let sculpture: Sculpture;
+
+                    //------
+                    // TODO: Marial provider
+                    const materialA = new StandardMaterial('material', scene);
+                    materialA.diffuseColor = Color3.FromHexString('#0055ff');
+                    materialA.alpha = 1;
+
+                    const materialB = new StandardMaterial('material', scene);
+                    materialB.diffuseColor = Color3.FromHexString('#ff002b');
+                    materialB.alpha = 1;
+
+                    const materialC = new StandardMaterial('material', scene);
+                    materialC.diffuseColor = Color3.FromHexString('#88ff00');
+                    materialC.alpha = 1;
+                    //------
+
                     /*/
                     const box = MeshBuilder.CreateBox(
                         'box',
@@ -61,22 +80,10 @@ export function MainPage() {
                     );
                     box.material = materialA;
                     box.position.y = 1;
+                    box.position.z = -8.5;
+
+                    sculpture = new Sculpture(box, scene);
                     /**/
-
-                    //------
-                    // TODO: Marial provider
-                    const materialA = new StandardMaterial('material', scene);
-                    materialA.diffuseColor = Color3.FromHexString('#0055ff');
-                    materialA.alpha = 0.5;
-
-                    const materialB = new StandardMaterial('material', scene);
-                    materialB.diffuseColor = Color3.FromHexString('#ff002b');
-                    materialB.alpha = 0.5;
-
-                    const materialC = new StandardMaterial('material', scene);
-                    materialC.diffuseColor = Color3.FromHexString('#88ff00');
-                    materialC.alpha = 0.5;
-                    //------
 
                     // Our built-in 'ground' shape.
                     const ground = MeshBuilder.CreateGround(
@@ -151,7 +158,7 @@ export function MainPage() {
                                 if (state.value !== 0) {
                                     if (freehand === null) {
                                         freehand = new Freehand(scene);
-                                        freehand.mesh.material = materialC;
+                                        freehand.mesh.material = materialB;
                                     }
 
                                     freehand.addPoint(
@@ -161,6 +168,8 @@ export function MainPage() {
                                     state.value === 0 &&
                                     freehand !== null
                                 ) {
+                                    sculpture.subtract(freehand.mesh);
+
                                     // TODO: Freeze object
                                     freehand = null;
                                 }
@@ -260,7 +269,7 @@ export function MainPage() {
                     );
                     /**/
 
-                    /*/
+                    /**/
                     // TODO: DRY
                     // TODO: Make as promise with loader support
                     SceneLoader.ImportMesh(
@@ -278,10 +287,15 @@ export function MainPage() {
                                 mesh.scaling.y = 0.02;
                                 mesh.scaling.z = 0.02;
                                 mesh.position.y = 1;
+                                mesh.position.z = -8;
+
+                                mesh.material = materialB;
+
+                                // sculpture = new Sculpture(mesh as Mesh, scene);
                                 //mesh.position.x = x++;
                                 //mesh.rotation.y = Math.PI;
 
-                                /** /
+                                /*/
                                 // TODO: Cuttion manager
 
                                 await forEver();
@@ -297,7 +311,7 @@ export function MainPage() {
                                 tube1.dispose();
                                 tube2.dispose();
                                 mesh.dispose();
-                                /** /
+                                /**/
                             }
 
                             // Finished

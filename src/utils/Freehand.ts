@@ -8,11 +8,12 @@ export class Freehand {
 
     private tubeDrawOptions: any;
     private tubeDrawCurrentSegment = 0;
-    constructor(scene: Scene) {
+    public constructor(scene: Scene) {
         this.tubeDrawOptions = {
+            tessellation: 8,
             updatable: true,
             cap: Mesh.CAP_ALL,
-            radius: 0.1,
+            radius: 0.03,
             path: Array(FREEHAND_ALLOCATED_SEGMENTS).fill(
                 // TODO: Some point under ground
                 new Vector3(0, 0, 0),
@@ -25,7 +26,7 @@ export class Freehand {
         );
     }
 
-    addPoint(point: Vector3) {
+    public addPoint(point: Vector3) {
         if (this.tubeDrawCurrentSegment >= FREEHAND_ALLOCATED_SEGMENTS) {
             console.warn('Freehand: Path is full, cannot add point');
             return;
