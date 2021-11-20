@@ -4,19 +4,17 @@ import {
     FreeCamera,
     HemisphericLight,
     MeshBuilder,
-    SceneLoader,
     StandardMaterial,
     Vector3,
     WebXRAbstractMotionController,
     WebXRInputSource,
 } from '@babylonjs/core';
-import '@babylonjs/loaders/glTF';
-import '@babylonjs/loaders/OBJ';
 import React from 'react';
 import styled from 'styled-components';
 import { SceneComponent } from '../components/SceneComponent';
 import { Freehand } from '../utils/Freehand';
 import { initWebXrPolyfill } from '../utils/initWebXrPolyfill';
+import { loadModel } from '../utils/loadModel';
 import { Sculpture } from '../utils/Sculpture';
 
 export function MainPage() {
@@ -174,150 +172,16 @@ export function MainPage() {
                                     freehand = null;
                                 }
                             });
-
-                            /*/
-                                    (async () => {
-                                        let i = 0;
-                                        while (true) {
-                                            await forTime(100);
-
-                                            if (
-                                                motionController
-                                                    .rootMesh
-                                            ) {
-                                                const position =
-                                                    motionController.rootMesh.absolutePosition.clone();
-
-                                                // Update
-                                                tubeDrawOptions.path[i++] =
-                                                    position;
-                                                tubeDrawOptions.instance =
-                                                    tubeDraw;
-                                                tubeDraw =
-                                                    MeshBuilder.CreateTube(
-                                                        'tubeDraw',
-                                                        tubeDrawOptions,
-                                                    );
-                                            } else {
-                                                //console.log('No rootMesh');
-                                            }
-                                        }
-                                    })();
-
-                                    /**/
                         },
                     );
 
-                    /*/
-                    const tube1 = MeshBuilder.CreateTube(
-                        'tube1',
-                        {
-                            cap: Mesh.CAP_ALL,
-                            radius: 0.6,
-                            path: [
-                                new Vector3(-1, -1, -1),
+                    const foxMesh = await loadModel('Fox.glb', scene);
+                    foxMesh.material = materialB;
+                    sculpture = new Sculpture(foxMesh, scene);
 
-                                new Vector3(0, 0, 0),
-                                new Vector3(10, 5, 0),
-                            ],
-                        },
-                        scene,
-                    );
-                    tube1.material = materialB;
-                    /**/
-
-                    /*/
-                    const tube2 = MeshBuilder.CreateTube(
-                        'tube2',
-                        {
-                            cap: Mesh.CAP_ALL,
-                            radius: 0.6,
-                            path: [
-                                new Vector3(-10, 20, 0),
-
-                                new Vector3(0, 0, 0),
-                            ],
-                        },
-                        scene,
-                    );
-                    tube2.material = materialB;
-                    /**/
-
-                    /*/
-                    // TODO: DRY
-                    // TODO: Make as promise with loader support
-                    SceneLoader.ImportMesh(
-                        '',
-                        process.env.PUBLIC_URL + 'models/',
-                        // TODO: !!! 'Tumor.obj',
-                        'Fox.glb',
-                        scene,
-                        (newMeshes) => {
-                            //console.log(newMeshes);
-
-                            let x = 2;
-                            for (const mesh of newMeshes) {
-                                mesh.scaling.x = 0.02;
-                                mesh.scaling.y = 0.02;
-                                mesh.scaling.z = 0.02;
-                                mesh.position.y = 1;
-                                mesh.position.x = x++;
-                            }
-
-                            // Finished
-                        },
-                    );
-                    /**/
-
-                    /**/
-                    // TODO: DRY
-                    // TODO: Make as promise with loader support
-                    SceneLoader.ImportMesh(
-                        '',
-                        process.env.PUBLIC_URL + 'models/',
-                        'Tumor.obj',
-
-                        scene,
-                        async (newMeshes) => {
-                            //console.log(newMeshes);
-
-                            //let x = 4;
-                            for (const mesh of newMeshes) {
-                                mesh.scaling.x = 0.02;
-                                mesh.scaling.y = 0.02;
-                                mesh.scaling.z = 0.02;
-                                mesh.position.y = 1;
-                                mesh.position.z = -8;
-
-                                mesh.material = materialB;
-
-                                // sculpture = new Sculpture(mesh as Mesh, scene);
-                                //mesh.position.x = x++;
-                                //mesh.rotation.y = Math.PI;
-
-                                /*/
-                                // TODO: Cuttion manager
-
-                                await forEver();
-                                await forTime(1000);
-                                const a = CSG.FromMesh(mesh as any);
-                                const b = CSG.FromMesh(tube1);
-                                const c = CSG.FromMesh(tube2);
-
-                                const cropped = a.subtract(b).subtract(c);
-
-                                cropped.toMesh('cropped', materialC, scene);
-
-                                tube1.dispose();
-                                tube2.dispose();
-                                mesh.dispose();
-                                /**/
-                            }
-
-                            // Finished
-                        },
-                    );
-                    /**/
+                    //const tumorMesh = await loadModel('Tumor.obj', scene);
+                    //tumorMesh.material = materialB;
+                    //sculpture = new Sculpture(tumorMesh, scene);
                 }}
             />
         </MainPageDiv>
