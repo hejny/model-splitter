@@ -1,25 +1,65 @@
-import { CSG, Mesh, Scene } from '@babylonjs/core';
+import {
+    Color3,
+    CSG,
+    Mesh,
+    Scene,
+    StandardMaterial,
+    Vector3,
+} from '@babylonjs/core';
 
+// !!! TODO: Manage material here
 export class Sculpture {
-    private renderedMesh: Mesh;
-    private renderedMeshCsg: CSG;
+    private originalCsg: CSG;
+    private originalPosition: Vector3;
 
-    public constructor(private baseMesh: Mesh, private scene: Scene) {
-        this.renderedMesh = baseMesh;
-        this.renderedMeshCsg = CSG.FromMesh(baseMesh);
+    private currentPositiveMesh: Mesh;
+    private currentNegativeMesh: Mesh | null = null;
+
+    private positiveCsg: CSG;
+    private negativeCsg: CSG | null = null;
+
+    private materialA: StandardMaterial;
+
+    public constructor(originalMesh: Mesh, private scene: Scene) {
+        this.materialA = new StandardMaterial('material', scene);
+        this.materialA.diffuseColor = Color3.FromHexString('#ffffff');
+        //this.materialA.alpha = 1;
+
+        this.currentPositiveMesh = originalMesh;
+        this.originalPosition = originalMesh.position.clone();
+
+        this.currentPositiveMesh.material = this.materialA;
+
+        // TODO: CSG Clonning
+        this.originalCsg = CSG.FromMesh(originalMesh);
+        this.positiveCsg = CSG.FromMesh(originalMesh);
     }
 
     public subtract(substractingMesh: Mesh) {
-        this.renderedMeshCsg.subtractInPlace(CSG.FromMesh(substractingMesh));
+        try {
+            this.positiveCsg.subtractInPlace(CSG.FromMesh(substractingMesh));
+            this.negativeCsg = this.originalCsg.subtract(this.positiveCsg);
 
-        const oldMesh = this.renderedMesh;
-        this.renderedMesh = this.renderedMeshCsg.toMesh(
-            this.renderedMesh.name,
-            this.renderedMesh.material,
-            this.scene,
-        );
+            substractingMesh.dispose();
+            this.currentPositiveMesh.dispose();
+            this.currentNegativeMesh?.dispose();
 
-        substractingMesh.dispose();
-        oldMesh.dispose();
+            this.currentPositiveMesh = this.positiveCsg.toMesh(
+                'positive',
+                this.materialA,
+                this.scene,
+            );
+
+            this.currentNegativeMesh = this.negativeCsg.toMesh(
+                'negative',
+                this.materialA,
+                this.scene,
+            );
+
+            this.currentNegativeMesh.position = this.originalPosition.clone();
+            this.currentNegativeMesh.position.x += 0.8;
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

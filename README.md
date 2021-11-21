@@ -1,5 +1,7 @@
-# ✂️ 3D Model splitter
+# ✂️ 3D Model splitter for
 
 [![Test + Lint](https://github.com/hejny/model-splitter/actions/workflows/test+lint.yml/badge.svg)](https://github.com/hejny/model-splitter/actions/workflows/test+lint.yml)
 
 Split one 3D model into two with help of VR
+
+!!! IKEM Hackatho branding

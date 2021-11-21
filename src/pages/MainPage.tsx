@@ -1,8 +1,9 @@
 import {
     AbstractMesh,
     Color3,
+    Color4,
+    DirectionalLight,
     FreeCamera,
-    HemisphericLight,
     MeshBuilder,
     StandardMaterial,
     Vector3,
@@ -28,6 +29,41 @@ export function MainPage() {
 
                     await initWebXrPolyfill();
 
+                    scene.clearColor = Color4.FromHexString(
+                        `#1d1c21` /* Transparent + fallback to body background-color */,
+                    );
+
+                    //-----------------------------------------
+                    // TODO: Marial provider
+
+                    const wireframeMaterial = new StandardMaterial(
+                        'material',
+                        scene,
+                    );
+                    wireframeMaterial.diffuseColor =
+                        Color3.FromHexString('#000000');
+                    wireframeMaterial.specularColor =
+                        Color3.FromHexString('#000000');
+                    wireframeMaterial.alpha = 0.3;
+                    wireframeMaterial.wireframe = true;
+
+                    const materialB = new StandardMaterial('material', scene);
+                    materialB.diffuseColor = Color3.FromHexString('#ff002b');
+                    materialB.alpha = 1;
+
+                    const materialC = new StandardMaterial('material', scene);
+                    materialC.diffuseColor = Color3.FromHexString('#88ff00');
+                    materialC.alpha = 1;
+
+                    const groundMaterial = new StandardMaterial(
+                        'material',
+                        scene,
+                    );
+                    groundMaterial.diffuseColor =
+                        Color3.FromHexString('#353535');
+                    groundMaterial.alpha = 1;
+                    //-----------------------------------------
+
                     // This creates and positions a free camera (non-mesh)
                     const camera = new FreeCamera(
                         'camera1',
@@ -43,32 +79,57 @@ export function MainPage() {
                     // This attaches the camera to the canvas
                     camera.attachControl(canvas, true);
 
-                    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+                    //-----------------------------------------
+                    /*/
                     const light = new HemisphericLight(
                         'light',
                         new Vector3(0, 1, 0),
                         scene,
                     );
-
-                    // Default intensity is 1. Let's dim the light a small amount
-                    light.intensity = 0.7;
+                    light.intensity = 0.05;
+                    /**/
+                    //------
+                    const light1 = new DirectionalLight(
+                        'light1',
+                        new Vector3(
+                            10 * Math.sin(Math.PI * 2 * (1 / 3)),
+                            -10,
+                            10 * Math.cos(Math.PI * 2 * (1 / 3)),
+                        ),
+                        scene,
+                    );
+                    light1.intensity = 0.7;
+                    light1.diffuse = Color3.FromHexString('#00ff00');
+                    light1.specular = Color3.FromHexString('#00ff00');
+                    //------
+                    const light2 = new DirectionalLight(
+                        'light2',
+                        new Vector3(
+                            10 * Math.sin(Math.PI * 2 * (2 / 3)),
+                            -10,
+                            10 * Math.cos(Math.PI * 2 * (2 / 3)),
+                        ),
+                        scene,
+                    );
+                    light2.intensity = 0.7;
+                    light2.diffuse = Color3.FromHexString('#0000ff');
+                    light2.specular = Color3.FromHexString('#0000ff');
+                    //------
+                    const light3 = new DirectionalLight(
+                        'light3',
+                        new Vector3(
+                            10 * Math.sin(Math.PI * 2 * (3 / 3)),
+                            -10,
+                            10 * Math.cos(Math.PI * 2 * (3 / 3)),
+                        ),
+                        scene,
+                    );
+                    light3.intensity = 0.7;
+                    light3.diffuse = Color3.FromHexString('#ff0000');
+                    light3.specular = Color3.FromHexString('#ff0000');
+                    //-----------------------------------------
 
                     let sculpture: Sculpture;
-
-                    //------
-                    // TODO: Marial provider
-                    const materialA = new StandardMaterial('material', scene);
-                    materialA.diffuseColor = Color3.FromHexString('#0055ff');
-                    materialA.alpha = 1;
-
-                    const materialB = new StandardMaterial('material', scene);
-                    materialB.diffuseColor = Color3.FromHexString('#ff002b');
-                    materialB.alpha = 1;
-
-                    const materialC = new StandardMaterial('material', scene);
-                    materialC.diffuseColor = Color3.FromHexString('#88ff00');
-                    materialC.alpha = 1;
-                    //------
 
                     /*/
                     const box = MeshBuilder.CreateBox(
@@ -93,6 +154,7 @@ export function MainPage() {
                         },
                         scene,
                     );
+                    ground.material = groundMaterial;
 
                     const xr = await scene.createDefaultXRExperienceAsync({
                         floorMeshes: [ground],
@@ -175,13 +237,25 @@ export function MainPage() {
                         },
                     );
 
-                    const foxMesh = await loadModel('Fox.glb', scene);
-                    foxMesh.material = materialB;
-                    sculpture = new Sculpture(foxMesh, scene);
+                    //const foxMesh = await loadModel('Fox.glb', scene);
+                    //foxMesh.material = materialB;
+                    //sculpture = new Sculpture(foxMesh, scene);
 
-                    //const tumorMesh = await loadModel('Tumor.obj', scene);
-                    //tumorMesh.material = materialB;
-                    //sculpture = new Sculpture(tumorMesh, scene);
+                    const tumorWireframePositiveMesh = await loadModel(
+                        'Tumor.obj',
+                        scene,
+                    );
+                    tumorWireframePositiveMesh.material = wireframeMaterial;
+
+                    const tumorWireframeNegativeMesh =
+                        tumorWireframePositiveMesh.createInstance('instance');
+                    tumorWireframeNegativeMesh.position.x += 0.8;
+                    // tumorWireframeNegativeMesh.material = wireframeMaterial;
+
+                    sculpture = new Sculpture(
+                        await loadModel('Tumor.lowpoly.obj', scene),
+                        scene,
+                    );
                 }}
             />
         </MainPageDiv>

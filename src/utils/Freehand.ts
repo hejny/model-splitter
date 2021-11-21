@@ -13,7 +13,7 @@ export class Freehand {
             tessellation: 8,
             updatable: true,
             cap: Mesh.CAP_ALL,
-            radius: 0.03,
+            radius: 0.07,
             path: Array(FREEHAND_ALLOCATED_SEGMENTS).fill(
                 // TODO: Some point under ground
                 new Vector3(0, 0, 0),
@@ -29,6 +29,17 @@ export class Freehand {
     public addPoint(point: Vector3) {
         if (this.tubeDrawCurrentSegment >= FREEHAND_ALLOCATED_SEGMENTS) {
             console.warn('Freehand: Path is full, cannot add point');
+            return;
+        }
+        const distance = Vector3.Distance(
+            point,
+            this.tubeDrawOptions.path[this.tubeDrawCurrentSegment],
+        );
+
+        if (distance < 0.01) {
+            console.warn(
+                'Freehand: Point is too close to previous point, ignoring',
+            );
             return;
         }
 
