@@ -18,7 +18,7 @@ export function App() {
 }
 
 const AppDiv = styled.div`
-    border: 1px dashed red;
+    /*border: 1px dashed red;*/
 
     display: flex;
     flex-direction: column;

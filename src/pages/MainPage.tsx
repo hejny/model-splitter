@@ -21,7 +21,7 @@ import { Sculpture } from '../utils/Sculpture';
 export function MainPage() {
     return (
         <MainPageDiv>
-            <h1>Model splitter</h1>
+            <h1>✂️ Model splitter</h1>
 
             <SceneComponent
                 onSceneReady={async (scene) => {
@@ -29,31 +29,28 @@ export function MainPage() {
 
                     await initWebXrPolyfill();
 
+                    // Note: Optimization:
+                    scene.pointerMovePredicate = () => false;
+                    scene.pointerDownPredicate = () => false;
+                    scene.pointerUpPredicate = () => false;
+
                     scene.clearColor = Color4.FromHexString(
                         `#1d1c21` /* Transparent + fallback to body background-color */,
                     );
 
                     //-----------------------------------------
-                    // TODO: Marial provider
-
-                    const wireframeMaterial = new StandardMaterial(
+                    // TODO: Material provider
+                    const cuttingMaterial = new StandardMaterial(
                         'material',
                         scene,
                     );
-                    wireframeMaterial.diffuseColor =
+                    cuttingMaterial.specularColor =
                         Color3.FromHexString('#000000');
-                    wireframeMaterial.specularColor =
+                    cuttingMaterial.diffuseColor =
                         Color3.FromHexString('#000000');
-                    wireframeMaterial.alpha = 0.3;
-                    wireframeMaterial.wireframe = true;
-
-                    const materialB = new StandardMaterial('material', scene);
-                    materialB.diffuseColor = Color3.FromHexString('#ff002b');
-                    materialB.alpha = 1;
-
-                    const materialC = new StandardMaterial('material', scene);
-                    materialC.diffuseColor = Color3.FromHexString('#88ff00');
-                    materialC.alpha = 1;
+                    cuttingMaterial.emissiveColor =
+                        Color3.FromHexString('#e41e26');
+                    cuttingMaterial.alpha = 0.9;
 
                     const groundMaterial = new StandardMaterial(
                         'material',
@@ -89,44 +86,31 @@ export function MainPage() {
                     light.intensity = 0.05;
                     /**/
                     //------
-                    const light1 = new DirectionalLight(
-                        'light1',
-                        new Vector3(
-                            10 * Math.sin(Math.PI * 2 * (1 / 3)),
-                            -10,
-                            10 * Math.cos(Math.PI * 2 * (1 / 3)),
-                        ),
-                        scene,
-                    );
-                    light1.intensity = 0.7;
-                    light1.diffuse = Color3.FromHexString('#00ff00');
-                    light1.specular = Color3.FromHexString('#00ff00');
-                    //------
-                    const light2 = new DirectionalLight(
-                        'light2',
-                        new Vector3(
-                            10 * Math.sin(Math.PI * 2 * (2 / 3)),
-                            -10,
-                            10 * Math.cos(Math.PI * 2 * (2 / 3)),
-                        ),
-                        scene,
-                    );
-                    light2.intensity = 0.7;
-                    light2.diffuse = Color3.FromHexString('#0000ff');
-                    light2.specular = Color3.FromHexString('#0000ff');
-                    //------
-                    const light3 = new DirectionalLight(
-                        'light3',
-                        new Vector3(
-                            10 * Math.sin(Math.PI * 2 * (3 / 3)),
-                            -10,
-                            10 * Math.cos(Math.PI * 2 * (3 / 3)),
-                        ),
-                        scene,
-                    );
-                    light3.intensity = 0.7;
-                    light3.diffuse = Color3.FromHexString('#ff0000');
-                    light3.specular = Color3.FromHexString('#ff0000');
+                    // @see https://coolors.co/e28413-f56416-dd4b1a-ef271b-ea1744
+                    const lightColors = `4c1e4f-b5a886-fee1c7-fa7e61-f44174`
+                        .split('-')
+                        .map((c) => `#${c}`);
+                    lightColors.forEach((color, i) => {
+                        const light = new DirectionalLight(
+                            'light1',
+                            new Vector3(
+                                10 *
+                                    Math.cos(
+                                        Math.PI * 2 * (i / lightColors.length),
+                                    ),
+                                -10,
+                                10 *
+                                    Math.sin(
+                                        Math.PI * 2 * (i / lightColors.length),
+                                    ),
+                            ),
+                            scene,
+                        );
+                        light.intensity = 0.8;
+                        light.diffuse = Color3.FromHexString(color);
+                        light.specular = Color3.FromHexString(color);
+                    });
+
                     //-----------------------------------------
 
                     let sculpture: Sculpture;
@@ -212,23 +196,23 @@ export function MainPage() {
                             motionController.components[
                                 'xr-standard-trigger'
                             ].onButtonStateChangedObservable.add((state) => {
-                                // TODO: !!! Use value
-                                //console.log(state.value);
-
                                 if (state.value !== 0) {
                                     if (freehand === null) {
-                                        freehand = new Freehand(scene);
-                                        freehand.mesh.material = materialB;
+                                        freehand = new Freehand(
+                                            scene,
+                                            cuttingMaterial,
+                                        );
                                     }
 
-                                    freehand.addPoint(
+                                    freehand.addFrame(
                                         rootMesh.absolutePosition.clone(),
+                                        state.value,
                                     );
                                 } else if (
                                     state.value === 0 &&
                                     freehand !== null
                                 ) {
-                                    sculpture.subtract(freehand.mesh);
+                                    sculpture.subtract(...freehand.meshes);
 
                                     // TODO: Freeze object
                                     freehand = null;
@@ -237,23 +221,15 @@ export function MainPage() {
                         },
                     );
 
-                    //const foxMesh = await loadModel('Fox.glb', scene);
-                    //foxMesh.material = materialB;
-                    //sculpture = new Sculpture(foxMesh, scene);
-
-                    const tumorWireframePositiveMesh = await loadModel(
-                        'Tumor.obj',
-                        scene,
-                    );
-                    tumorWireframePositiveMesh.material = wireframeMaterial;
-
-                    const tumorWireframeNegativeMesh =
-                        tumorWireframePositiveMesh.createInstance('instance');
-                    tumorWireframeNegativeMesh.position.x += 0.8;
-                    // tumorWireframeNegativeMesh.material = wireframeMaterial;
+                    // TODO: !!! Dropzone
 
                     sculpture = new Sculpture(
-                        await loadModel('Tumor.lowpoly.obj', scene),
+                        await loadModel(
+                            'Liver_WithTumor.lowpoly.obj',
+
+                            scene,
+                        ),
+                        await loadModel('Liver_WithTumor.obj', scene),
                         scene,
                     );
                 }}
@@ -263,6 +239,15 @@ export function MainPage() {
 }
 
 const MainPageDiv = styled.div`
+    h1 {
+        /*font-family: 'Times New Roman', Times, serif;
+        text-transform: uppercase;*/
+
+        color: #e41e26;
+        background-color: #fdf2f2;
+        padding: 1em;
+    }
+
     canvas {
         z-index: 1;
         position: fixed;

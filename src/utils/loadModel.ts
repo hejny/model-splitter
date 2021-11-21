@@ -2,7 +2,7 @@ import { Mesh, Scene, SceneLoader } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
 import '@babylonjs/loaders/OBJ';
 
-const IMPORT_MODEL_SCALE = 0.005;
+const IMPORT_MODEL_SCALE = 0.003;
 
 export function loadModel(filename: string, scene: Scene): Promise<Mesh> {
     return new Promise((resolve, reject) => {
@@ -27,8 +27,14 @@ export function loadModel(filename: string, scene: Scene): Promise<Mesh> {
                     mesh.scaling.x = IMPORT_MODEL_SCALE;
                     mesh.scaling.y = IMPORT_MODEL_SCALE;
                     mesh.scaling.z = IMPORT_MODEL_SCALE;
-                    mesh.position.y = 1;
-                    mesh.position.z = -9.5;
+                    mesh.position.x = 0;
+                    mesh.position.y = 1.2;
+                    mesh.position.z = -10;
+                    mesh.rotation.y = Math.PI;
+
+                    // Note: Optimization:
+                    mesh.isPickable = false;
+                    mesh.doNotSyncBoundingInfo = true;
 
                     resolve(mesh as Mesh);
                 }
