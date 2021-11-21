@@ -155,12 +155,14 @@ export function MainPage() {
                                 await Promise.all([
                                     new Promise<AbstractMesh>((resolve) =>
                                         controller.onMeshLoadedObservable.add(
+                                            // tslint:disable-next-line:no-shadowed-variable
                                             (rootMesh) => resolve(rootMesh),
                                         ),
                                     ),
                                     new Promise<WebXRAbstractMotionController>(
                                         (resolve) =>
                                             controller.onMotionControllerInitObservable.add(
+                                                // tslint:disable-next-line:no-shadowed-variable
                                                 (motionController) =>
                                                     resolve(motionController),
                                             ),
