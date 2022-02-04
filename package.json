@@ -63,5 +63,5 @@
     "waitasecond": "1.8.10",
     "web-vitals": "2.1.2"
   },
-  "description": "Test + Lint"
+  "description": "Split one 3D model into two with a help of VR"
 }
